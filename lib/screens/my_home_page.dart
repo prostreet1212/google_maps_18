@@ -26,6 +26,9 @@ class _MyHomePageState extends State<MyHomePage> {
     "latitude": 37.42796133580664,
     "longitude": -122.085749655962
   }); //=LocationData.fromMap({l});
+  bool isLocationEnabled=false;
+  double zoom=14.4746;
+  //double zoom=14;
 
   Future<void> getCurrentLocation() async {
     Location location = Location();
@@ -51,15 +54,19 @@ class _MyHomePageState extends State<MyHomePage> {
     _permissionGranted = await location.hasPermission();
     if (_permissionGranted == PermissionStatus.denied) {
       _permissionGranted = await location.requestPermission();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text('Включите разрешение "Местоположение"'),
-        ),
-      );
+
       if (_permissionGranted != PermissionStatus.granted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+            Text('Включите разрешение "Местоположение"'),
+          ),
+        );
         return;
       }
+    }else if(_permissionGranted == PermissionStatus.grantedLimited){
+      _permissionGranted = await location.requestPermission();
+
     }
 
     location.getLocation().then((location1) {
@@ -69,14 +76,19 @@ class _MyHomePageState extends State<MyHomePage> {
     location.onLocationChanged.listen((newLocation) {
       currentLocation = newLocation;
 
-      controller.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-              target: LatLng(
-                  currentLocation!.latitude!, currentLocation!.longitude!),
-              zoom: 14.4746),
-        ),
-      );
+      if(!isLocationEnabled){
+        controller.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+                target: LatLng(
+                    currentLocation!.latitude!, currentLocation!.longitude!),
+                zoom: zoom),
+          ),
+        );
+        isLocationEnabled=true;
+      }
+
+
       setState(() {});
     });
   }
@@ -112,20 +124,38 @@ class _MyHomePageState extends State<MyHomePage> {
                 Marker(
                     markerId: MarkerId('source'),
                     position: LatLng(currentLocation!.latitude!,
-                        currentLocation!.longitude!))
+                        currentLocation!.longitude!),
+                )
               },
             ),
-            /*Flexible(
-              child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Slider(
-              min: 0,
-              max: 100,
-              value: 10,
-              onChanged: (double value) {  },
-            ),
-          ),
-          )*/
+           Align(
+             alignment: Alignment.bottomCenter,
+             child: Wrap(
+               children: [
+                 Container(
+                   width: MediaQuery.of(context).size.width/2,
+                   color:Color.fromARGB(192, 199, 192, 192),
+                   child: Slider(
+                     min: 14.4746,
+                     max: 21,
+                     value: zoom,
+                     onChanged: (double value) async{
+                       zoom=value;
+                       final GoogleMapController controller = await _controller.future;
+                       controller.animateCamera(CameraUpdate.zoomTo(zoom));
+                       setState(() {
+
+                       });
+                     },
+                   ),
+                 )
+
+               ],
+             ),
+           )
+
+
+
           ],
         ),
         floatingActionButton: FloatingActionButton(
