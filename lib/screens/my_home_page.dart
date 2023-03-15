@@ -1,6 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:google_maps_18/widgets/bottom_panel.dart';
+import 'package:google_maps_18/widgets/left_move_button.dart';
+import 'package:google_maps_18/widgets/my_google_map.dart';
+import 'package:google_maps_18/widgets/right_move_button.dart';
+import 'package:google_maps_18/widgets/top_move_button.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
@@ -17,56 +22,49 @@ class _MyHomePageState extends State<MyHomePage> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
-  /*CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
-  );*/
-
-  LocationData? currentLocation = LocationData.fromMap({
+  /* LocationData? currentLocation = LocationData.fromMap({
     "latitude": 37.42796133580664,
     "longitude": -122.085749655962
-  }); //=LocationData.fromMap({l});
-  bool isLocationEnabled=false;
-  double zoom=14.4746;
-  //double zoom=14;
+  });*/
+
+  LocationData? currentLocation;
+
+  bool isLocationEnabled = false;
+  double zoom = 14.4746;
 
   Future<void> getCurrentLocation() async {
     Location location = Location();
     final GoogleMapController controller = await _controller.future;
 
-    bool _serviceEnabled;
-    PermissionStatus _permissionGranted;
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
 
-    _serviceEnabled = await location.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await location.requestService();
+    serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await location.requestService();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content:
               Text('Включите геолокацию для определения вашего местоположения'),
         ),
       );
-      if (!_serviceEnabled) {
+      if (!serviceEnabled) {
         return;
       }
     }
 
-    _permissionGranted = await location.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await location.requestPermission();
+    permissionGranted = await location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await location.requestPermission();
 
-      if (_permissionGranted != PermissionStatus.granted) {
+      if (permissionGranted != PermissionStatus.granted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content:
-            Text('Включите разрешение "Местоположение"'),
+          const SnackBar(
+            content: Text('Включите разрешение "Местоположение"'),
           ),
         );
         return;
       }
-    }else if(_permissionGranted == PermissionStatus.grantedLimited){
-      _permissionGranted = await location.requestPermission();
-
     }
 
     location.getLocation().then((location1) {
@@ -76,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
     location.onLocationChanged.listen((newLocation) {
       currentLocation = newLocation;
 
-      if(!isLocationEnabled){
+      if (!isLocationEnabled) {
         controller.animateCamera(
           CameraUpdate.newCameraPosition(
             CameraPosition(
@@ -85,9 +83,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 zoom: zoom),
           ),
         );
-        isLocationEnabled=true;
+        isLocationEnabled = true;
       }
-
 
       setState(() {});
     });
@@ -103,73 +100,44 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        /* appBar: AppBar(
-        title: Text(widget.title),
-      ),*/
         body: Stack(
           children: [
-            GoogleMap(
+            MyGoogleMap(controller: _controller, currentLocation: currentLocation),
+            //MyGoogleMaP(controller: _controller, currentLocation: currentLocation),
+            /*GoogleMap(
               mapType: MapType.hybrid,
               initialCameraPosition: CameraPosition(
-                target: LatLng(
-                    currentLocation!.latitude!, currentLocation!.longitude!),
+                target: currentLocation == null
+                    ? LatLng(37.42796133580664, -122.085749655962)
+                    : LatLng(currentLocation!.latitude!,
+                        currentLocation!.longitude!),
                 zoom: 14.4746,
               ),
               myLocationButtonEnabled: true,
               zoomControlsEnabled: false,
+              zoomGesturesEnabled: false,
+              scrollGesturesEnabled: false,
               onMapCreated: (controller) {
                 _controller.complete(controller);
               },
-              markers: {
-                Marker(
-                    markerId: MarkerId('source'),
-                    position: LatLng(currentLocation!.latitude!,
-                        currentLocation!.longitude!),
-                )
-              },
-            ),
-           Align(
-             alignment: Alignment.bottomCenter,
-             child: Wrap(
-               children: [
-                 Container(
-                   width: MediaQuery.of(context).size.width/2,
-                   color:Color.fromARGB(192, 199, 192, 192),
-                   child: Slider(
-                     min: 14.4746,
-                     max: 21,
-                     value: zoom,
-                     onChanged: (double value) async{
-                       zoom=value;
-                       final GoogleMapController controller = await _controller.future;
-                       controller.animateCamera(CameraUpdate.zoomTo(zoom));
-                       setState(() {
-
-                       });
-                     },
-                   ),
-                 )
-
-               ],
-             ),
-           )
-
-
-
+              markers: currentLocation != null
+                  ? {
+                      Marker(
+                        markerId: MarkerId('source'),
+                        position: LatLng(currentLocation!.latitude!,
+                            currentLocation!.longitude!),
+                      )
+                    }
+                  : {},
+            ),*/
+            TopMoveButton(controller: _controller),
+            LeftMoveButton(controller: _controller),
+            RightMoveButton(controller: _controller),
+            BottomPanel(
+                controller: _controller,
+                zoom: zoom,
+                currentLocation: currentLocation)
           ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.add),
-          onPressed: () async {
-            /*  Position i= await _determinePosition();
-          print(i.latitude.toString());
-          _kGooglePlex=CameraPosition(
-            target: LatLng(i.latitude,i.longitude),
-            zoom: 14.4746,
-          );
-          final GoogleMapController controller = await _controller.future;
-          controller.animateCamera(CameraUpdate.newCameraPosition(_kGooglePlex,),);*/
-          },
         ),
       ),
     );
