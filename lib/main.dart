@@ -1,8 +1,5 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_18/screens/my_home_page.dart';
-
-
 
 void main() {
   runApp(const MyApp());
@@ -18,10 +15,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'гугл',),
+      home: const MyHomePage(),
       //home: MapSample(),
     );
   }
 }
-
-

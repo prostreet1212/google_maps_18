@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class RightMoveButton extends StatelessWidget {
-  const RightMoveButton({Key? key,required this.controller}) : super(key: key);
-  final Completer<GoogleMapController> controller ;
+  const RightMoveButton({Key? key, required this.controller}) : super(key: key);
+  final Completer<GoogleMapController> controller;
 
   @override
   Widget build(BuildContext context) {
@@ -20,11 +20,11 @@ class RightMoveButton extends StatelessWidget {
               color: Colors.black,
             ),
             onPressed: () async {
-              final GoogleMapController newController =
-              await controller.future;
+              final GoogleMapController newController = await controller.future;
               newController.animateCamera(CameraUpdate.scrollBy(50, 0));
             },
           ),
-        ));
+        ),
+    );
   }
 }

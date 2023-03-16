@@ -1,28 +1,22 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
-class BottomPanel extends StatefulWidget {
-   const BottomPanel({Key? key,required this.controller,required this.zoom,required this.currentLocation}) : super(key: key);
-  final Completer<GoogleMapController> controller ;
-   final double zoom;
-   final LocationData? currentLocation;
+class BottomPanel extends StatelessWidget {
+  const BottomPanel(
+      {Key? key,
+      required this.controller,
+      required this.zoom,
+      required this.currentLocation,
+      required this.onChanged})
+      : super(key: key);
 
-   void  setZoom(double zoom)=>zoom=this.zoom;
-   double get zoom1 {
-     return zoom;
-   }
+  final Completer<GoogleMapController> controller;
+  final double zoom;
+  final LocationData? currentLocation;
+  final void Function(double) onChanged;
 
-
-
-  @override
-  State<BottomPanel> createState() => _BottomPanelState();
-
-}
-
-class _BottomPanelState extends State<BottomPanel> {
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -40,9 +34,8 @@ class _BottomPanelState extends State<BottomPanel> {
               ),
               onPressed: () async {
                 final GoogleMapController newController =
-                await widget.controller.future;
-                newController
-                    .animateCamera(CameraUpdate.scrollBy(0, 50));
+                    await controller.future;
+                newController.animateCamera(CameraUpdate.scrollBy(0, 50));
               },
             ),
             Row(
@@ -54,20 +47,10 @@ class _BottomPanelState extends State<BottomPanel> {
                       Container(
                         color: const Color.fromARGB(192, 199, 192, 192),
                         child: Slider(
-                          min: 14.4746,
-                          max: 21,
-                          value: widget.zoom1,
-                          onChanged: (double value) async {
-                            //widget.zoom = value;
-                            widget.setZoom(value);
-
-                            final GoogleMapController controller =
-                            await widget.controller.future;
-                            controller.animateCamera(
-                                CameraUpdate.zoomTo(widget.zoom1));
-                            setState(() {});
-                          },
-                        ),
+                            min: 14.4746,
+                            max: 21,
+                            value: zoom,
+                            onChanged: onChanged),
                       )
                     ],
                   ),
@@ -77,20 +60,19 @@ class _BottomPanelState extends State<BottomPanel> {
                 ),
                 FloatingActionButton(
                   backgroundColor: const Color.fromARGB(192, 199, 192, 192),
-                  onPressed: widget.currentLocation != null
+                  onPressed: currentLocation != null
                       ? () async {
-                    final GoogleMapController controller =
-                    await widget.controller.future;
-                    controller.animateCamera(
-                      CameraUpdate.newCameraPosition(
-                        CameraPosition(
-                            target: LatLng(
-                                widget.currentLocation!.latitude!,
-                                widget.currentLocation!.longitude!),
-                            zoom: widget.zoom),
-                      ),
-                    );
-                  }
+                          final GoogleMapController newController =
+                              await controller.future;
+                          newController.animateCamera(
+                            CameraUpdate.newCameraPosition(
+                              CameraPosition(
+                                  target: LatLng(currentLocation!.latitude!,
+                                      currentLocation!.longitude!),
+                                  zoom: zoom),
+                            ),
+                          );
+                        }
                       : () {},
                   child: const Icon(
                     Icons.home,
@@ -105,4 +87,3 @@ class _BottomPanelState extends State<BottomPanel> {
     );
   }
 }
-
