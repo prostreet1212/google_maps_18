@@ -33,11 +33,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onChanged(double value) async {
+    zoom = value;
     final GoogleMapController newController = await _controller.future;
     newController.animateCamera(CameraUpdate.zoomTo(zoom));
-    setState(() {
-      zoom = value;
-    });
+    setState(() {});
   }
 
   Future<void> getCurrentLocation() async {

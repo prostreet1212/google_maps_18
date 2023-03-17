@@ -45,13 +45,16 @@ class BottomPanel extends StatelessWidget {
                   child: Wrap(
                     children: [
                       Container(
-                        color: const Color.fromARGB(192, 199, 192, 192),
-                        child: Slider(
-                            min: 14.4746,
-                            max: 21,
-                            value: zoom,
-                            onChanged: onChanged),
-                      )
+                          color: const Color.fromARGB(192, 199, 192, 192),
+                          child: Padding(
+                            padding: EdgeInsets.all(0),
+                            child: Slider(
+                              min: 14.4746,
+                              max: 21,
+                              value: zoom,
+                              onChanged: onChanged,
+                            ),
+                          ))
                     ],
                   ),
                 ),
